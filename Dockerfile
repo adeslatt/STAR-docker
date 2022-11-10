@@ -16,5 +16,5 @@ RUN apt-get update && \
 RUN cd /usr/bin && \
     wget https://github.com/alexdobin/STAR/releases/download/2.7.10b/STAR_2.7.10b.zip && \
     unzip STAR_2.7.10b.zip && \
-    ln -s STAR_2.7.10b/Linux_x86_64/STAR . && \
-    ln -s STAR_2.7.10b/Linux_x86_64/STARlong .
+    ln -s STAR_2.7.10b/Linux_x86_64_static/STAR . && \
+    ln -s STAR_2.7.10b/Linux_x86_64_static/STARlong .
