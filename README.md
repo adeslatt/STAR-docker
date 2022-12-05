@@ -10,9 +10,11 @@ Built from the [GitHub Release](https://github.com/alexdobin/STAR/releases/tag/2
 
 [STAR User Manual](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf)
 
-## Using Test Data
+### Requirements
 
-To test out this installation and docker build which will be stitched together into our workflow, we use test data From a previous workflow for testing our Proteogenomics Long Read RNA-Sequencing Workflow [Test Data](https://doi.org/10.5281/zenodo.5234651)
+This was built on a Mac Book Pro.
+Docker is installed -- need root privileges for installation
+
 
 ### Getting the needed bits and parts
 
@@ -20,12 +22,17 @@ Actually grabbing a couple of small test data sets from our [Dry Bench Skills Cl
 
 We set up a test directory after cloning this repository for testing.
 
-#### Requirements
+To test out this installation and docker build which will be stitched together into our workflow, we use test data From a previous workflow for testing our Proteogenomics Long Read RNA-Sequencing Workflow [Test Data](https://doi.org/10.5281/zenodo.5234651)
 
-This was built on a Mac Book Pro.
-Docker is installed -- need root privileges for installation
+From here we will get our genome and annotation small files for testing
 
-#### Small Fastq data sets
+You can test the container by doing the following:
+
+First, make a test directory (just to keep things clean)
+```bash
+mkdir test
+cd test
+```
 
 Then download two test files
 ```bash
@@ -33,10 +40,17 @@ wget https://zenodo.org/record/7025773/files/test.20k_reads_1.fastq.gz
 wget https://zenodo.org/record/7025773/files/test.20k_reads_2.fastq.gz
 ```
 
+Now download a genome with annotations (actually just chromosome 22 -- to keep it small.
+
+```bash
+wget https://zenodo.org/record/5234651/files/GRCh38.primary_assembly.genome.chr22.fa
+wget https://zenodo.org/record/5234651/files/gencode.v35.annotation.chr22.gtf
+``
+
 Next, referring to the provided STAR manual we first index the genome
 
 ```bash
-docker build -t trimmomatic .
+docker build -t star .
 ```
 
 To test this tool from the command line 
@@ -48,15 +62,6 @@ PWD=$(pwd)
 
 Then mount and use your current directory and call the tool now encapsulated within the environment.
 
-Any trimmomatic is a java application and running it requires the jar file which is unzipped in this docker -  command can be used to check.
-
-You can test the container by doing the following:
-
-First, make a test directory (just to keep things clean)
-```bash
-mkdir test
-cd test
-```
 
 ## Test your docker image
 
@@ -66,6 +71,19 @@ First, let's test to see if the java install in the docker image was successful
 docker run -it -v $PWD:$PWD -w $PWD star STAR --version
 ```
 
+## Now lets build an index
+
+Referring to the manual, we see we can generate an index with the *genomeGenerate* command
+
+```bash
+docker run -it -v $PWD:$PWD -w $PWD star STAR \
+     --runMode genomeGenerate \
+     --genomeFastaFiles GRCh38.primary_assembly.genome.chr22.fa \
+     --genomeDir . \
+     --sjdbGTFfile gencode.v35.annotation.chr22.gtf \
+     --sjdbOverhang 50 \
+     --outFileNamePrefix chr22
+```
 
 
 
