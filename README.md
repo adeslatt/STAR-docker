@@ -45,7 +45,7 @@ Now download a genome with annotations (actually just chromosome 22 -- to keep i
 ```bash
 wget https://zenodo.org/record/5234651/files/GRCh38.primary_assembly.genome.chr22.fa
 wget https://zenodo.org/record/5234651/files/gencode.v35.annotation.chr22.gtf
-``
+```
 
 Next, referring to the provided STAR manual we first index the genome
 
