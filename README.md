@@ -65,7 +65,7 @@ Then mount and use your current directory and call the tool now encapsulated wit
 
 ## Test your docker image
 
-First, let's test to see if the java install in the docker image was successful
+First, let's test to see the docker image was successful
 
 ```bash
 docker run -it -v $PWD:$PWD -w $PWD star STAR --version
@@ -177,5 +177,62 @@ Nov 10 23:48:41 ..... finished successfully
 DONE: Genome generation, EXITING
 ```
 
+## Test with test reads
 
+First, let's test to see if the java install in the docker image was successful
 
+Using some test reads from the same repository where the above chr22 limited genome was found.
+For the curious, it came from course I taught with the wonderful Christina Chatzipantsiou @cgpu.
+[Dry Bench Skills for the Researcher](https://doi.org/10.5281/zenodo.7025773).   This was done with [Lifebit.ai](https://www.lifebit.ai/) while we were at [The Jackson Laboratory](https://www.jax.org)
+                                                         
+```bash
+wget https://zenodo.org/record/7025773/files/test.20k_reads_1.fastq.gz
+wget https://zenodo.org/record/7025773/files/test.20k_reads_2.fastq.gz
+```
+Referring to the [STAR User Manual](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf) we see how we can specify
+* How to specify our input fastq files (note that ours are compressed)
+* How to specify number of threads (on the mac I'll choose 6) to enhance parallel processing
+* How to input our reads (we could use a manifest file)
+* How to specify we want coordinate sorted BAM file (I had to increase on the mac the number of files that can be created *`ulimit -n 5000`* - the default on the mac was *`256`*
+* How to specify annotation files (we will use gencode.v35.annotation.chr22.gtf as we did with our genome)
+* How to specify plicing junction list (sjdbList.fromGTF.out.tab output in the genome index creation step above)
+* and how to provide a outFileNamePrefix
+                                                         
+Now we are ready to go                                              
+       
+```bash
+docker run -it -v $PWD:$PWD -w $PWD star STAR \
+     --runThreadN=6 \
+     --genomeDir $PWD \
+     --readFilesIn /Users/deslattesmaysa2/projects/STAR-docker/test/test.20k_reads_1.fastq.gz \
+                   /Users/deslattesmaysa2/projects/STAR-docker/test/test.20k_reads_2.fastq.gz \
+     --sjdbGTFfile /Users/deslattesmaysa2/projects/STAR-docker/test/gencode.v35.annotation.chr22.gtf \
+     --sjdbFileChrStartEnd /Users/deslattesmaysa2/projects/STAR-docker/test/sjdbList.fromGTF.out.tab \
+     --outFileNamePrefix $PWD/test.chr22. \
+     --outSAMtype BAM SortedByCoordinate \
+     --readFilesCommand gunzip -c
+```
+
+Runs very quickly on the Mac Book Pro
+Successful execution looks like this:
+
+```bash
+	STAR --runThreadN=6 --genomeDir /Users/deslattesmaysa2/projects/STAR-docker/test --readFilesIn /Users/deslattesmaysa2/projects/STAR-docker/test/test.20k_reads_1.fastq.gz /Users/deslattesmaysa2/projects/STAR-docker/test/test.20k_reads_2.fastq.gz --sjdbGTFfile /Users/deslattesmaysa2/projects/STAR-docker/test/gencode.v35.annotation.chr22.gtf --sjdbFileChrStartEnd /Users/deslattesmaysa2/projects/STAR-docker/test/sjdbList.fromGTF.out.tab --outFileNamePrefix /Users/deslattesmaysa2/projects/STAR-docker/test/test.chr22. --outSAMtype BAM SortedByCoordinate --readFilesCommand gunzip -c
+	STAR version: 2.7.10b   compiled: 2022-11-01T09:53:26-04:00 :/home/dobin/data/STAR/STARcode/STAR.master/source
+Dec 11 21:35:28 ..... started STAR run
+Dec 11 21:35:28 ..... loading genome
+Dec 11 21:35:48 ..... processing annotations GTF
+Dec 11 21:35:49 ..... inserting junctions into the genome indices
+Dec 11 21:35:55 ..... started mapping
+Dec 11 21:37:26 ..... finished mapping
+Dec 11 21:37:26 ..... started sorting BAM
+Dec 11 21:37:27 ..... finished successfully
+```
+And with the parameters above procues 5 output files:
+```bash
+-rwxrwxr-x  1 deslattesmaysa2  NIH\Domain Users        9526 Dec 11 16:37 test.chr22.Log.out
+-rw-r--r--  1 deslattesmaysa2  NIH\Domain Users        1981 Dec 11 16:37 test.chr22.Log.final.out
+-rwxrwxr-x  1 deslattesmaysa2  NIH\Domain Users         364 Dec 11 16:37 test.chr22.Log.progress.out
+-rwxrwxr-x  1 deslattesmaysa2  NIH\Domain Users      125902 Dec 11 16:37 test.chr22.Aligned.sortedByCoord.out.bam
+-rw-r--r--  1 deslattesmaysa2  NIH\Domain Users         446 Dec 11 16:37 test.chr22.SJ.out.tab
+```
