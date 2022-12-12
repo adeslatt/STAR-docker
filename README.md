@@ -193,10 +193,12 @@ Referring to the [STAR User Manual](https://github.com/alexdobin/STAR/blob/maste
 * How to specify our input fastq files (note that ours are compressed)
 * How to specify number of threads (on the mac I'll choose 6) to enhance parallel processing
 * How to input our reads (we could use a manifest file)
-* How to specify we want coordinate sorted BAM file (I had to increase on the mac the number of files that can be created *`ulimit -n 5000`* - the default on the mac was *`256`*
+* How to specify we want coordinate sorted BAM file (I had to increase on the mac the number of files that can be created **`ulimit -n 5000`** - the default on the mac was **`256`**
 * How to specify annotation files (we will use gencode.v35.annotation.chr22.gtf as we did with our genome)
 * How to specify plicing junction list (sjdbList.fromGTF.out.tab output in the genome index creation step above)
-* and how to provide a outFileNamePrefix
+* How to provide a outFileNamePrefix
+* How to output header details for the bam (outSAMheader @HD, outSAMheaderPG @PG and outputSAMheaderCommentFile @CO)
+* and how to ensure BAM sorting uses the number of threads available (outBAMsortingThreadN=6)
                                                          
 Now we are ready to go                                              
        
@@ -210,29 +212,112 @@ docker run -it -v $PWD:$PWD -w $PWD star STAR \
      --sjdbFileChrStartEnd /Users/deslattesmaysa2/projects/STAR-docker/test/sjdbList.fromGTF.out.tab \
      --outFileNamePrefix $PWD/test.chr22. \
      --outSAMtype BAM SortedByCoordinate \
-     --readFilesCommand gunzip -c
+     --readFilesCommand gunzip -c \
+     --outSAMheaderHD @HD \
+     --outSAMheaderPG @PG \
+     --outSAMheaderCommentFile @CO \
+     --outBAMsortingThreadN=6
 ```
 
 Runs very quickly on the Mac Book Pro
 Successful execution looks like this:
 
 ```bash
-	STAR --runThreadN=6 --genomeDir /Users/deslattesmaysa2/projects/STAR-docker/test --readFilesIn /Users/deslattesmaysa2/projects/STAR-docker/test/test.20k_reads_1.fastq.gz /Users/deslattesmaysa2/projects/STAR-docker/test/test.20k_reads_2.fastq.gz --sjdbGTFfile /Users/deslattesmaysa2/projects/STAR-docker/test/gencode.v35.annotation.chr22.gtf --sjdbFileChrStartEnd /Users/deslattesmaysa2/projects/STAR-docker/test/sjdbList.fromGTF.out.tab --outFileNamePrefix /Users/deslattesmaysa2/projects/STAR-docker/test/test.chr22. --outSAMtype BAM SortedByCoordinate --readFilesCommand gunzip -c
+STAR --runThreadN=6 --genomeDir /Users/deslattesmaysa2/projects/STAR-docker/test --readFilesIn /Users/deslattesmaysa2/projects/STAR-docker/test/test.20k_reads_1.fastq.gz /Users/deslattesmaysa2/projects/STAR-docker/test/test.20k_reads_2.fastq.gz --sjdbGTFfile /Users/deslattesmaysa2/projects/STAR-docker/test/gencode.v35.annotation.chr22.gtf --sjdbFileChrStartEnd /Users/deslattesmaysa2/projects/STAR-docker/test/sjdbList.fromGTF.out.tab --outFileNamePrefix /Users/deslattesmaysa2/projects/STAR-docker/test/test.chr22.withHeader. --outSAMtype BAM SortedByCoordinate --readFilesCommand gunzip -c --outSAMheaderHD @HD --outSAMheaderPG @PG --outSAMheaderCommentFile @CO --outBAMsortingThreadN=6
 	STAR version: 2.7.10b   compiled: 2022-11-01T09:53:26-04:00 :/home/dobin/data/STAR/STARcode/STAR.master/source
-Dec 11 21:35:28 ..... started STAR run
-Dec 11 21:35:28 ..... loading genome
-Dec 11 21:35:48 ..... processing annotations GTF
-Dec 11 21:35:49 ..... inserting junctions into the genome indices
-Dec 11 21:35:55 ..... started mapping
-Dec 11 21:37:26 ..... finished mapping
-Dec 11 21:37:26 ..... started sorting BAM
-Dec 11 21:37:27 ..... finished successfully
+Dec 11 22:00:31 ..... started STAR run
+Dec 11 22:00:31 ..... loading genome
+Dec 11 22:00:40 ..... processing annotations GTF
+Dec 11 22:00:41 ..... inserting junctions into the genome indices
+Dec 11 22:00:45 ..... started mapping
+Dec 11 22:02:23 ..... finished mapping
+Dec 11 22:02:23 ..... started sorting BAM
+Dec 11 22:02:24 ..... finished successfully
 ```
-And with the parameters above procues 5 output files:
+
+And with the parameters above produces 5 output files:
+
 ```bash
 -rwxrwxr-x  1 deslattesmaysa2  NIH\Domain Users        9526 Dec 11 16:37 test.chr22.Log.out
 -rw-r--r--  1 deslattesmaysa2  NIH\Domain Users        1981 Dec 11 16:37 test.chr22.Log.final.out
 -rwxrwxr-x  1 deslattesmaysa2  NIH\Domain Users         364 Dec 11 16:37 test.chr22.Log.progress.out
 -rwxrwxr-x  1 deslattesmaysa2  NIH\Domain Users      125902 Dec 11 16:37 test.chr22.Aligned.sortedByCoord.out.bam
 -rw-r--r--  1 deslattesmaysa2  NIH\Domain Users         446 Dec 11 16:37 test.chr22.SJ.out.tab
+```
+
+## (Optional) Deposit your container in the your [CAVATICA](cavatica.sbgenomics.com)  Docker Registry
+
+If you are working with Kids First or INCLUDE data, and you are registered with either the [Kids First DRC](https://kidsfirstdrc.org/) or the [INCLUDE Data Hub](https://includedcc.org/), you have access to a platform as a service, CAVATICA by Seven Bridges.
+
+If you do, you Docker Image Repository Specific to you is at the location of pgc-images.sbgenomics.com/[YOUR CAVATICA USERNAME]
+
+There are three steps to building and using a container
+
+1. build
+2. tag
+3. push
+
+We have built and we did tag this (I built the above on my desktop which is a mac, but it could have been built within a google shell.  Examples of how to do this are found in the [Elements of Style in Workflow Creation and Maintenance, Day 3](https://github.com/NIH-NICHD/Kids-First-Elements-of-Style-Workflow-Creation-Maintenance/blob/main/classes/Building-A-Nextflow-Script/README.md#preamble-to-building-workflows-using-containers)
+
+### Tag
+
+To tag the image just built, you need the image id, to get that simply use the command **`docker images`**.
+
+```bash
+docker images
+```
+
+This returns:
+
+```bash
+REPOSITORY                                           TAG       IMAGE ID       CREATED        SIZE
+samtools                                             latest    e7945dfbaa32   14 hours ago   576MB
+rmats                                                latest    24f836d5d5a2   6 days ago     1.53GB
+star                                                 latest    264b10d079ae   4 weeks ago    125MB
+trimmomatic                                          latest    633fec609229   4 weeks ago    790MB
+```
+
+Now we re-tag it for pushing to our own personal [CAVATICA](cavatica.sbgenomics.com) docker container registry.
+
+```bash
+docker tag 264b10d079ae pgc-images.sbgenomics.com/[YOUR CAVATICA USERNAME]/star:v2.7.10b
+```
+
+### Docker registry login
+
+There is actually another step required before you can do your push to the registry.  You need to authenticate.
+
+Navigate to the CAVATICA Developers Tab.
+
+Select Authentication Token, if you have not done so, generate that token.
+
+Then Copy the token and paste it in the proper location in the command below (after -p for password)
+
+```bash
+docker login pgc-images.sbgenomics.com -u [YOUR CAVATICA USERNAME] -p [YOUR AUTHENTICATION TOKEN]
+```
+
+### Push
+
+Now that we have
+
+* tagged :whitecheck our docker image and
+
+* we have authenticated :whitecheck 
+
+```bash
+docker push pgc-images.sbgenomics.com/[YOUR CAVATICA USERNAME]/star:v2.7.10b
+```
+
+You know things are going correctly when you see something to the effect of:
+
+
+```bash
+The push refers to repository [pgc-images.sbgenomics.com/[YOUR CAVATICA USERNAME]/star:v2.7.10b]
+ea25457229f1: Pushed 
+17280cc0fa6b: Pushed 
+ab2731ec3f53: Pushed 
+6fa1f4185aa2: Pushed 
+ad6562704f37: Pushed 
+latest: digest: sha256:3b1976baa7c4aaa2afd25098c41c754e2579060b6c1da32282c45ac8a10293a9 size: 1373
 ```
