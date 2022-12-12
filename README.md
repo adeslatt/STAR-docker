@@ -78,6 +78,7 @@ Referring to the manual, we see we can generate an index with the *genomeGenerat
 ```bash
 docker run -it -v $PWD:$PWD -w $PWD star STAR \
      --runMode genomeGenerate \
+     --runThreadN=7 \
      --genomeFastaFiles GRCh38.primary_assembly.genome.chr22.fa \
      --genomeDir . \
      --sjdbGTFfile gencode.v35.annotation.chr22.gtf \
@@ -176,6 +177,78 @@ Writing 1565873491 bytes into .//SAindex ; empty space on disk = 225437424812032
 Nov 10 23:48:41 ..... finished successfully
 DONE: Genome generation, EXITING
 ```
+## (Optional) Build your genome index in a Terminal Window within a JupyterLab notebook within [CAVATICA](cavatica.sbgenomics.com) 
+
+So wait a minute... I don't have enough RAM on my 16 GB RAM MacBook Pro, what am I thinking???
+
+Ok, so what is the work around.   Can't run docker within a terminal window within a JupyterLab notebook on CAVATICA.  Security problem apparently.  FedRAMP issue.  So what to do.
+
+### Anaconda install STAR
+
+Conda is your friend.  Conda is on CAVATICA and may be found within the image of the environment, and because we are in the cloud you can spin up as a large a machine deemed necessary for your genome.  Remember not all genomes are the same.  Trisomy 21 for example.  What is that reference genome.  I'll get back to you on that one.  
+
+How do you do it?
+
+#### [Anaconda search packages star](anaconda.org/bioconda/star)
+
+Nearly 399,918 downloads, I believe you can trust this install.  Bioconda, look it up, a trust-worthy packager of packages and in many environments, also here in conda.  The bioconda channel - again look it up, you may learn something -- keeps it up todate.   Inspecting you see that it is up-to-date with the *`v2.7.10b`* that we want to use.  Both on the Mac (osx-64), as well as the linux-64.  
+
+Navigate to a terminal window within the `*Jupyterlab`* Launcher and install **`star`**
+
+```bash
+conda install -c bioconda star
+```
+
+This will install **`star`**
+
+```bash
+STAR -h
+```
+
+Will spit out a lot of help information.
+
+#### Get reference genome and annotation
+
+For this exercise, we need gencode annotation v33.   Googling it we find where to grab the appropriate genome input fasta file and annotation files
+
+For clean directory set up (we will later move this to the project files on the CAVATICA platform, but for now we will work in a subdirectory to get the work done.
+
+```bash
+mkdir human_reference
+cd human_reference
+```
+
+Now, lets get our dependencies: a genome fasta file and an annotation file.
+
+First the annotation file:
+```bash
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_33/gencode.v33.annotation.gtf.gz
+gunzip gencode.v33.annotation.gtf.gz
+```
+
+**`STAR`** can deal with gzipped input fastq files, but not annotation and genome files
+
+Now the genome reference file.
+
+```bash
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_33/GRCh38.primary_assembly.genome.fa.gz
+gunzip GRCh38.primary_assembly.genome.fa.gz
+```
+
+Now we are ready to build our genome indices.  Once we have them, we will move them to the project-files location for all of us to take advantage of.
+
+
+```bash
+STAR \
+--runMode genomeGenerate \
+--genomeFastaFiles GRCh38.primary_assembly.genome.fa \
+--sjdbGTFfile gencode.v33.annotation.gtf \
+--sjdbOverhang 50  \
+--runThreadN=14    \
+--outFileNamePrefix gencode.v33.
+```
+
+Note that I spun up a 16 vCPU with 32 GB RAM.  Note that most often you are getting about 2GB RAM per vCPU.  Just good to know.
 
 ## Test with test reads
 
