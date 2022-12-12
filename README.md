@@ -191,9 +191,9 @@ How do you do it?
 
 #### [Anaconda search packages star](anaconda.org/bioconda/star)
 
-Nearly 399,918 downloads, I believe you can trust this install.  Bioconda, look it up, a trust-worthy packager of packages and in many environments, also here in conda.  The bioconda channel - again look it up, you may learn something -- keeps it up todate.   Inspecting you see that it is up-to-date with the *`v2.7.10b`* that we want to use.  Both on the Mac (osx-64), as well as the linux-64.  
+Nearly 399,918 downloads, I believe you can trust this install.  Bioconda, look it up, a trust-worthy packager of packages and in many environments, also here in conda.  The bioconda channel - again look it up, you may learn something -- keeps it up todate.   Inspecting you see that it is up-to-date with the **`v2.7.10b`** that we want to use.  Both on the Mac (osx-64), as well as the linux-64.  
 
-Navigate to a terminal window within the `*Jupyterlab`* Launcher and install **`star`**
+Navigate to a terminal window within the **`Jupyterlab`** Launcher and install **`star`**
 
 ```bash
 conda install -c bioconda star
