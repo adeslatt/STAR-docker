@@ -248,7 +248,7 @@ STAR \
 --outFileNamePrefix gencode.v33.
 ```
 
-Note that I spun up a 16 vCPU with 32 GB RAM.  Note that most often you are getting about 2GB RAM per vCPU.  Just good to know.
+Note that I spun up a m5.16xlarge (65 vCPUs, 256 GB RAM). 
 
 ## Test with test reads
 
